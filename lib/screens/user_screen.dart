@@ -10,21 +10,21 @@ class UserScreen extends StatefulWidget {
   _UserScreenState createState() => _UserScreenState();
 }
 
-class _UserScreenState extends State<UserScreen> {
+class _UserScreenState extends State<UserScreen> with WidgetsBindingObserver {
   String id;
   void getId() async {
     final data = await FirebaseAuth.instance.currentUser();
     id = data.uid;
   }
 
-  void prepareChatRoom({String meSid, String userName ,String imageUrl}) async {
+  void prepareChatRoom({String meSid, String userName, String imageUrl , String status}) async {
     // double a=Random().nextDouble();
     // print(a.toString());
     //
     final chatRoomId = '$id$meSid';
     var isIn = false;
     var isSame = false;
-    final data = await Firestore.instance
+     await Firestore.instance
         .collection('chat_rooms/')
         .getDocuments()
         .then((value) {
@@ -37,7 +37,8 @@ class _UserScreenState extends State<UserScreen> {
             'id': meSid,
             'currentUser': id,
             'userName': userName,
-            'docId': '$chatRoomId'
+            'docId': '$chatRoomId',
+            'status':status
           });
         });
       } else {
@@ -61,7 +62,8 @@ class _UserScreenState extends State<UserScreen> {
             'currentUser': id,
             'userName': userName,
             'docId': '$chatRoomId',
-            'image':imageUrl
+            'image': imageUrl,
+            'status':status
           });
         } else if (isIn) {
           isIn = false;
@@ -71,7 +73,8 @@ class _UserScreenState extends State<UserScreen> {
             'currentUser': id,
             'userName': userName,
             'docId': '$meSid$id',
-          'image':imageUrl
+            'image': imageUrl,
+            'status':status
           });
         } else {
           Firestore.instance
@@ -83,33 +86,38 @@ class _UserScreenState extends State<UserScreen> {
               'currentUser': id,
               'userName': userName,
               'docId': '$chatRoomId',
-              'image':imageUrl
+              'image': imageUrl,
+              'status':status
             });
           });
         }
       }
       //
     });
-
-    // try{
-    // final data1=await Firestore.instance.document('chat_romes/$chatRoomId').setData({
-    //   'ahmed':'ahmed'
-    // });}catch(error){
-    //   print(error);
-    // }
-
-    // if(chatRoomId.contains(id) && chatRoomId.contains(meSid)){
-    //   return;
-    // }
-    // data.documents.where((element) => false)
-    // .where(field).document('$chatRoomId').collection('messages').add(
-    //     {});
   }
 
   @override
   void didChangeDependencies() {
     getId();
     super.didChangeDependencies();
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      Firestore.instance.document('users/$id').updateData({'status': 'online'});
+    } else if (state == AppLifecycleState.paused) {
+      Firestore.instance
+          .document('users/$id')
+          .updateData({'status': Timestamp.now()});
+    } else {}
   }
 
   @override
@@ -135,9 +143,14 @@ class _UserScreenState extends State<UserScreen> {
                   value: 'logOut')
             ],
             icon: Icon(Icons.more_vert),
-            onChanged: (itemIdentifier) {
+            onChanged: (itemIdentifier)async {
               if (itemIdentifier == 'logOut') {
+                await Firestore.instance
+                    .document('users/$id')
+                    .updateData({'status': Timestamp.now()});
+
                 FirebaseAuth.instance.signOut();
+
               }
             },
           )
@@ -160,16 +173,23 @@ class _UserScreenState extends State<UserScreen> {
                               snapshots.data.documents[i]['id'].toString();
                           var userName = snapshots.data.documents[i]['username']
                               .toString();
-                          var imageUrl=snapshots.data.documents[i]['userImage']
+                          var imageUrl = snapshots
+                              .data.documents[i]['userImage']
                               .toString();
-                          prepareChatRoom(meSid: meSid, userName: userName ,imageUrl:imageUrl );
+                          var status= snapshots
+                              .data.documents[i]['status']
+                              .toString();
+                          prepareChatRoom(
+                            status: status,
+                              meSid: meSid,
+                              userName: userName,
+                              imageUrl: imageUrl);
                         },
                         child: Card(
                           margin: EdgeInsets.all(8),
                           elevation: 5,
-                          color: Colors.grey.shade300,
+                          color: Colors.grey.shade200,
                           child: ListTile(
-
                             leading: CircleAvatar(
                               backgroundImage: NetworkImage(snapshots
                                           .connectionState ==
@@ -183,11 +203,19 @@ class _UserScreenState extends State<UserScreen> {
                               // id
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-
                               ),
                             ),
                             subtitle:
                                 Text(snapshots.data.documents[i]['email']),
+                            trailing: (snapshots.data.documents[i]['status'] ==
+                                    'online' || snapshots.data.documents[i]['status'] =='Typing...' )
+                                ? CircleAvatar(
+                                    radius: 5,
+                                  )
+                                : Container(
+                              width: 0,
+                              height: 0,
+                            ),
                           ),
                         ),
                       ),

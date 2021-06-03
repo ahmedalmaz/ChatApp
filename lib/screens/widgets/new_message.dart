@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
+
 import 'package:flutter/material.dart';
 
 class NewMessage extends StatefulWidget {
@@ -34,6 +36,26 @@ class _NewMessageState extends State<NewMessage> {
       'date': Timestamp.now()
     });
   }
+  FocusNode _focus=FocusNode();
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _focus.addListener(_onFocusChange);
+  }
+  void _onFocusChange(){
+    if(_focus.hasFocus){
+      Firestore.instance.document('users/${widget.currentUserId}').updateData({'status': 'Typing...'});
+    }else{
+      Firestore.instance.document('users/${widget.currentUserId}').updateData({'status': 'online'});
+    }
+  }
+  @override
+  void dispose() {
+    _focus.dispose();
+    // TODO: implement dispose
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +64,10 @@ class _NewMessageState extends State<NewMessage> {
         Expanded(
             child: Container(
           margin: EdgeInsets.only(bottom: 5, left: 5),
-          child: TextFormField(
+          child: TextField(
+
+            focusNode: _focus,
+
             onChanged: (value) {
               setState(() {
                 _message = value;
@@ -61,11 +86,14 @@ class _NewMessageState extends State<NewMessage> {
           onPressed: _message.trim().isEmpty
               ? null
               : () {
-                  _controller.clear();
+            _focus.unfocus();
+
+            _controller.clear();
                   setMessage(
                       chatId: widget.chatRoomId,
                       currentUserId: widget.currentUserId,
                       message: _message.trim());
+           _message='';
                 },
           iconSize: 30,
           color: Theme.of(context).accentColor,
