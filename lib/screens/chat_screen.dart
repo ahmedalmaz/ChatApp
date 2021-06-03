@@ -1,8 +1,9 @@
 import 'package:bubble/bubble.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:my_chat_app/screens/widgets/new_message.dart';
 import 'package:intl/intl.dart';
+import 'package:my_chat_app/screens/user_details_screen.dart';
+import 'package:my_chat_app/widgets/new_message.dart';
 
 class ChatScreen extends StatelessWidget {
   static const routName = '/Chat_screen';
@@ -19,39 +20,45 @@ class ChatScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: StreamBuilder(
-          stream: Firestore.instance.document('users/$user').snapshots(),
-          builder: (ctx, snapshot) =>
-              snapshot.connectionState == ConnectionState.waiting
-                  ? CircularProgressIndicator()
-                  : Column(
-                      children: [
-                        Container(
-                          width: double.infinity,
-                          child: Text(
-                            userName,
-                            style: TextStyle(fontWeight: FontWeight.bold),
+        title: InkWell(
+          onTap: () {
+            Navigator.pushNamed(context, UserDetailsScreen.routeName,
+                arguments: user);
+          },
+          child: StreamBuilder(
+            stream: Firestore.instance.document('users/$user').snapshots(),
+            builder: (ctx, snapshot) =>
+                snapshot.connectionState == ConnectionState.waiting
+                    ? CircularProgressIndicator()
+                    : Column(
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            child: Text(
+                              userName,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            alignment: Alignment.centerLeft,
                           ),
-                          alignment: Alignment.centerLeft,
-                        ),
-                        Container(
-                          width: double.infinity,
-                          child: Text(
-                            snapshot.data['status'] == 'online'
-                                ? 'online'
-                                : snapshot.data['status'] == 'Typing...'
-                                    ? 'Typing...'
-                                    : 'last seen at ${DateFormat.jm().format(DateTime.fromMicrosecondsSinceEpoch(snapshot.data['status'].microsecondsSinceEpoch))}',
-                            style: TextStyle(
-                                fontSize: 12,
-                                color: snapshot.data['status'] == 'online'
-                                    ? Colors.cyanAccent
-                                    : Colors.white),
+                          Container(
+                            width: double.infinity,
+                            child: Text(
+                              snapshot.data['status'] == 'online'
+                                  ? 'online'
+                                  : snapshot.data['status'] == 'Typing...'
+                                      ? 'Typing...'
+                                      : 'last seen at ${DateFormat.jm().format(DateTime.fromMicrosecondsSinceEpoch(snapshot.data['status'].microsecondsSinceEpoch))}',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: snapshot.data['status'] == 'online'
+                                      ? Colors.cyanAccent
+                                      : Colors.white),
+                            ),
+                            alignment: Alignment.centerLeft,
                           ),
-                          alignment: Alignment.centerLeft,
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+          ),
         ),
         leading: InkWell(
           onTap: () {
@@ -63,9 +70,12 @@ class ChatScreen extends StatelessWidget {
                 Icons.arrow_back_ios_outlined,
                 size: 20,
               ),
-              CircleAvatar(
-                backgroundImage: NetworkImage(imageUrl),
-                radius: 18,
+              Hero(
+               tag: user,
+                child: CircleAvatar(
+                  backgroundImage: NetworkImage(imageUrl),
+                  radius: 18,
+                ),
               ),
             ],
           ),

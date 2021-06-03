@@ -18,9 +18,7 @@ class _UserScreenState extends State<UserScreen> with WidgetsBindingObserver {
   }
 
   void prepareChatRoom({String meSid, String userName, String imageUrl , String status}) async {
-    // double a=Random().nextDouble();
-    // print(a.toString());
-    //
+
     final chatRoomId = '$id$meSid';
     var isIn = false;
     var isSame = false;

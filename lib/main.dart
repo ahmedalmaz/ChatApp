@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:my_chat_app/screens/auth_screen.dart';
 import 'package:my_chat_app/screens/chat_screen.dart';
+import 'package:my_chat_app/screens/user_details_screen.dart';
 import 'package:my_chat_app/screens/user_screen.dart';
 
 void main() {
@@ -17,6 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Chat App',
       theme: ThemeData(
 
@@ -33,6 +35,7 @@ class MyApp extends StatelessWidget {
       routes: {
         AuthScreen.routeName:(ctx)=>AuthScreen(),
         ChatScreen.routName:(ctx)=>ChatScreen(),
+        UserDetailsScreen.routeName:(ctx)=>UserDetailsScreen(),
       },
     );
   }
