@@ -5,21 +5,20 @@ import 'package:my_chat_app/screens/chat_screen.dart';
 
 class UserScreen extends StatefulWidget {
   static const routName = '/user_screen';
+  final String id;
+  UserScreen({this.id});
 
   @override
   _UserScreenState createState() => _UserScreenState();
 }
 
 class _UserScreenState extends State<UserScreen> with WidgetsBindingObserver {
-  String id;
-  void getId() async {
-    final data = await FirebaseAuth.instance.currentUser();
-    id = data.uid;
-  }
+
+
 
   void prepareChatRoom({String meSid, String userName, String imageUrl , String status}) async {
 
-    final chatRoomId = '$id$meSid';
+    final chatRoomId = '${widget.id}$meSid';
     var isIn = false;
     var isSame = false;
      await Firestore.instance
@@ -33,7 +32,7 @@ class _UserScreenState extends State<UserScreen> with WidgetsBindingObserver {
             .setData({}).then((value) {
           Navigator.of(context).pushNamed(ChatScreen.routName, arguments: {
             'id': meSid,
-            'currentUser': id,
+            'currentUser': widget.id,
             'userName': userName,
             'docId': '$chatRoomId',
             'status':status
@@ -41,7 +40,7 @@ class _UserScreenState extends State<UserScreen> with WidgetsBindingObserver {
         });
       } else {
         value.documents.forEach((element) {
-          if (element.documentID.contains(id) &&
+          if (element.documentID.contains(widget.id) &&
               element.documentID.contains(meSid)) {
             isIn = true;
           }
@@ -57,7 +56,7 @@ class _UserScreenState extends State<UserScreen> with WidgetsBindingObserver {
           isSame = false;
           Navigator.of(context).pushNamed(ChatScreen.routName, arguments: {
             'id': meSid,
-            'currentUser': id,
+            'currentUser': widget.id,
             'userName': userName,
             'docId': '$chatRoomId',
             'image': imageUrl,
@@ -68,9 +67,9 @@ class _UserScreenState extends State<UserScreen> with WidgetsBindingObserver {
           isSame = false;
           Navigator.of(context).pushNamed(ChatScreen.routName, arguments: {
             'id': meSid,
-            'currentUser': id,
+            'currentUser': widget.id,
             'userName': userName,
-            'docId': '$meSid$id',
+            'docId': '$meSid${widget.id}',
             'image': imageUrl,
             'status':status
           });
@@ -81,7 +80,7 @@ class _UserScreenState extends State<UserScreen> with WidgetsBindingObserver {
               .setData({}).then((value) {
             Navigator.of(context).pushNamed(ChatScreen.routName, arguments: {
               'id': meSid,
-              'currentUser': id,
+              'currentUser': widget.id,
               'userName': userName,
               'docId': '$chatRoomId',
               'image': imageUrl,
@@ -94,11 +93,7 @@ class _UserScreenState extends State<UserScreen> with WidgetsBindingObserver {
     });
   }
 
-  @override
-  void didChangeDependencies() {
-    getId();
-    super.didChangeDependencies();
-  }
+
 
   @override
   void initState() {
@@ -110,51 +105,18 @@ class _UserScreenState extends State<UserScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      Firestore.instance.document('users/$id').updateData({'status': 'online'});
+      Firestore.instance.document('users/${widget.id}').updateData({'status': 'online'});
     } else if (state == AppLifecycleState.paused) {
       Firestore.instance
-          .document('users/$id')
+          .document('users/${widget.id}')
           .updateData({'status': Timestamp.now()});
     } else {}
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Chat app'),
-        actions: [
-          DropdownButton(
-            items: [
-              DropdownMenuItem(
-                  child: Container(
-                    child: Row(
-                      children: [
-                        Icon(Icons.exit_to_app),
-                        SizedBox(
-                          width: 8,
-                        ),
-                        Text('log Out')
-                      ],
-                    ),
-                  ),
-                  value: 'logOut')
-            ],
-            icon: Icon(Icons.more_vert),
-            onChanged: (itemIdentifier)async {
-              if (itemIdentifier == 'logOut') {
-                await Firestore.instance
-                    .document('users/$id')
-                    .updateData({'status': Timestamp.now()});
 
-                FirebaseAuth.instance.signOut();
-
-              }
-            },
-          )
-        ],
-      ),
-      body: StreamBuilder(
+    return StreamBuilder(
         stream: Firestore.instance.collection('users').snapshots(),
         builder: (ctx, snapshots) => snapshots.connectionState ==
                 ConnectionState.waiting
@@ -163,7 +125,7 @@ class _UserScreenState extends State<UserScreen> with WidgetsBindingObserver {
               )
             : ListView.builder(
                 itemCount: snapshots.data.documents.length,
-                itemBuilder: (ctx, i) => id == snapshots.data.documents[i]['id']
+                itemBuilder: (ctx, i) => widget.id == snapshots.data.documents[i]['id']
                     ? Container()
                     : InkWell(
                         onTap: () {
@@ -218,7 +180,7 @@ class _UserScreenState extends State<UserScreen> with WidgetsBindingObserver {
                         ),
                       ),
               ),
-      ),
+
     );
   }
 }

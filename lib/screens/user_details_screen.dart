@@ -19,6 +19,7 @@ class UserDetailsScreen extends StatelessWidget {
               : CustomScrollView(
                   slivers: [
                     SliverAppBar(
+
                       stretch: true,
                       expandedHeight: 250,
                       elevation: 5,
@@ -58,6 +59,7 @@ class UserDetailsScreen extends StatelessWidget {
                       ),
                     ),
                     SliverList(
+
                       delegate: SliverChildListDelegate(
                         [
                           Card(

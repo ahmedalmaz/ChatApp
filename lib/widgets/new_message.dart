@@ -26,7 +26,7 @@ class _NewMessageState extends State<NewMessage> {
       String otherUserId,
       String message,
       String chatId}) async {
-    await Firestore.instance
+    final data=await Firestore.instance
         .collection('chat_rooms')
         .document('$chatId')
         .collection('messages')
@@ -35,6 +35,7 @@ class _NewMessageState extends State<NewMessage> {
       'senderId': currentUserId,
       'date': Timestamp.now()
     });
+
   }
   FocusNode _focus=FocusNode();
   @override

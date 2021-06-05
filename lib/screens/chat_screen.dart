@@ -99,6 +99,7 @@ class ChatScreen extends StatelessWidget {
                               reverse: true,
                               itemCount: snapshots.data.documents.length,
                               itemBuilder: (ctx, i) => Bubble(
+
                                     padding: BubbleEdges.all(10),
                                     child: Text(
                                       snapshots.data.documents[i]['message'],
@@ -126,6 +127,7 @@ class ChatScreen extends StatelessWidget {
                                             currentUserId
                                         ? Alignment.centerRight
                                         : Alignment.centerLeft,
+
                                   )
                               //     Message(
                               //   isMe: snapshots.data.documents[i]['senderId'] ==
