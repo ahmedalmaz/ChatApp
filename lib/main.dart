@@ -4,7 +4,6 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:my_chat_app/screens/auth_screen.dart';
 import 'package:my_chat_app/screens/chat_screen.dart';
 import 'package:my_chat_app/screens/image_preview.dart';

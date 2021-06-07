@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:my_chat_app/screens/user_details_screen.dart';
 import 'package:my_chat_app/widgets/new_message.dart';
+import 'package:my_chat_app/widgets/record.dart';
 
 class ChatScreen extends StatelessWidget {
   static const routName = '/Chat_screen';
@@ -71,7 +72,7 @@ class ChatScreen extends StatelessWidget {
                 size: 20,
               ),
               Hero(
-               tag: user,
+                tag: user,
                 child: CircleAvatar(
                   backgroundImage: NetworkImage(imageUrl),
                   radius: 18,
@@ -86,66 +87,74 @@ class ChatScreen extends StatelessWidget {
             .collection('chat_rooms/$chatroomId/messages')
             .orderBy('date', descending: true)
             .snapshots(),
-        builder: (ctx, snapshots) =>
-            snapshots.connectionState == ConnectionState.waiting
-                ? Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : Column(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          child: ListView.builder(
-                              reverse: true,
-                              itemCount: snapshots.data.documents.length,
-                              itemBuilder: (ctx, i) => Bubble(
-
-                                    padding: BubbleEdges.all(10),
-                                    child: Text(
-                                      snapshots.data.documents[i]['message'],
-                                      textAlign: snapshots.data.documents[i]
-                                                  ['senderId'] ==
-                                              currentUserId
-                                          ? TextAlign.right
-                                          : TextAlign.left,
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                    elevation: 5,
-                                    margin: BubbleEdges.only(bottom: 10),
-                                    color: snapshots.data.documents[i]
-                                                ['senderId'] ==
-                                            currentUserId
-                                        ? Color.fromRGBO(30, 200, 255, 1.0)
-                                        : Colors.grey.shade300,
-                                    nip: snapshots.data.documents[i]
-                                                ['senderId'] ==
-                                            currentUserId
-                                        ? BubbleNip.rightTop
-                                        : BubbleNip.leftTop,
-                                    alignment: snapshots.data.documents[i]
-                                                ['senderId'] ==
-                                            currentUserId
-                                        ? Alignment.centerRight
-                                        : Alignment.centerLeft,
-
-                                  )
-                              //     Message(
-                              //   isMe: snapshots.data.documents[i]['senderId'] ==
-                              //           currentUserId
-                              //       ? true
-                              //       : false,
-                              //   message: snapshots.data.documents[i]['message'],
-                              // ),
-                              ),
-                        ),
-                      ),
-                      NewMessage(
-                        chatRoomId: chatroomId,
-                        currentUserId: currentUserId,
-                        userName: userName,
-                      )
-                    ],
+        builder: (ctx, snapshots) => snapshots.connectionState ==
+                ConnectionState.waiting
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : Column(
+                children: [
+                  Expanded(
+                    child: Container(
+                      child: ListView.builder(
+                          reverse: true,
+                          itemCount: snapshots.data.documents.length,
+                          itemBuilder: (ctx, i) => Bubble(
+                                padding: BubbleEdges.all(10),
+                                child: snapshots.data.documents[i]['audio']
+                                        .contains('/')
+                                    ? Record(
+                                        url: snapshots.data.documents[i]
+                                            ['audio'],
+                                        isMe: snapshots.data.documents[i]
+                                                    ['senderId'] ==
+                                                currentUserId
+                                            ? true
+                                            : false,
+                                      )
+                                    : Text(
+                                        snapshots.data.documents[i]['message'],
+                                        textAlign: snapshots.data.documents[i]
+                                                    ['senderId'] ==
+                                                currentUserId
+                                            ? TextAlign.right
+                                            : TextAlign.left,
+                                        style: TextStyle(fontSize: 22),
+                                      ),
+                                elevation: 5,
+                                margin: BubbleEdges.only(bottom: 10),
+                                color: snapshots.data.documents[i]
+                                            ['senderId'] ==
+                                        currentUserId
+                                    ? Color.fromRGBO(30, 200, 255, 1.0)
+                                    : Colors.grey.shade300,
+                                nip: snapshots.data.documents[i]['senderId'] ==
+                                        currentUserId
+                                    ? BubbleNip.rightTop
+                                    : BubbleNip.leftTop,
+                                alignment: snapshots.data.documents[i]
+                                            ['senderId'] ==
+                                        currentUserId
+                                    ? Alignment.centerRight
+                                    : Alignment.centerLeft,
+                              )
+                          //     Message(
+                          //   isMe: snapshots.data.documents[i]['senderId'] ==
+                          //           currentUserId
+                          //       ? true
+                          //       : false,
+                          //   message: snapshots.data.documents[i]['message'],
+                          // ),
+                          ),
+                    ),
                   ),
+                  NewMessage(
+                    chatRoomId: chatroomId,
+                    currentUserId: currentUserId,
+                    userName: userName,
+                  )
+                ],
+              ),
       ),
     );
   }
